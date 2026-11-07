@@ -1,0 +1,64 @@
+name: Build Split
+
+on:
+  push:
+    branches: [claude/gracious-ptolemy-kez7ec, main]
+    paths: ['split-app/**', '.github/workflows/split-build.yml']
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            cmd: dist:win
+            files: split-app/dist/*.exe
+          - os: macos-latest
+            cmd: dist:mac
+            files: split-app/dist/*.dmg
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: split-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: split-app/package-lock.json
+      - run: npm ci
+      - run: npm run ${{ matrix.cmd }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: split-${{ runner.os }}
+          path: ${{ matrix.files }}
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: split-latest
+          name: Split (latest build)
+          prerelease: true
+          make_latest: false
+          target_commitish: ${{ github.sha }}
+          body: |
+            Windows: Split-Setup-*.exe (installer) or Split-*-portable.exe (no install).
+            macOS: Split-*-arm64.dmg for Apple Silicon, Split-*-x64.dmg for Intel.
+          files: out/*

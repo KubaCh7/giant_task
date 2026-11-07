@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:">
+<title>Split</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="app">
+
+  <nav class="rail" aria-label="Split">
+    <a class="mark" href="#live" aria-label="Split home" title="Split">
+      <svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true">
+        <rect x="3" y="5" width="9" height="18" rx="4.5" fill="#ffffff"/>
+        <rect x="16" y="5" width="9" height="18" rx="4.5" fill="#4a8ad6"/>
+      </svg>
+    </a>
+    <a class="rail-item" href="#live" data-view="live" aria-label="Live" title="Live">
+      <svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <path d="M2 6h14M2 12h14"/><path d="M5 4v4M11 10v4M14 4v4"/>
+      </svg>
+    </a>
+    <a class="rail-item" href="#settings" data-view="settings" aria-label="Settings" title="Settings">
+      <svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <path d="M3 4.5h6M13 4.5h2M3 9h2M9 9h6M3 13.5h8M15 13.5h0"/><circle cx="11" cy="4.5" r="1.7"/><circle cx="7" cy="9" r="1.7"/><circle cx="13" cy="13.5" r="1.7"/>
+      </svg>
+    </a>
+  </nav>
+
+  <main class="canvas">
+    <header class="title-row">
+      <div class="title-text">
+        <h1 id="page-title">Live</h1>
+        <p class="finding"><span id="finding">Looking for Roblox</span> <span class="saved" id="saved" aria-live="polite"></span></p>
+      </div>
+      <div class="title-actions" id="live-actions">
+        <button class="btn" id="btn-test" type="button">Test once</button>
+        <button class="btn btn-primary" id="btn-run" type="button"><span id="run-label">Start</span><span class="kbd" id="run-key">F8</span></button>
+      </div>
+    </header>
+
+    <!-- ================= LIVE ================= -->
+    <section class="view" id="view-live" aria-label="Live">
+
+      <div class="notice" id="notice-permission" hidden>
+        <p>Split needs Accessibility permission to click on macOS.</p>
+        <button class="btn" type="button" id="btn-permission">Open the permission prompt</button>
+      </div>
+      <div class="notice" id="notice-native" hidden><p id="native-error"></p></div>
+
+      <div class="kpis panel" role="group" aria-label="This session">
+        <div class="kpi kpi-lead">
+          <span class="kpi-label">Clicks sent</span>
+          <span class="kpi-value num" id="k-sent">0</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Held while pad was busy</span>
+          <span class="kpi-value num" id="k-held">0</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Failed</span>
+          <span class="kpi-value num" id="k-failed">0</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Running for</span>
+          <span class="kpi-value num" id="k-uptime">0:00</span>
+        </div>
+      </div>
+
+      <section class="panel lanes" aria-labelledby="lanes-title">
+        <header class="panel-head">
+          <h2 id="lanes-title">Last minute</h2>
+          <ul class="legend" aria-label="Key">
+            <li><span class="sw sw-pad"></span>Pad input</li>
+            <li><span class="sw sw-click"></span>Click delivered</li>
+            <li><span class="sw sw-held"></span>Held for pad</li>
+            <li><span class="sw sw-fail"></span>Failed</li>
+          </ul>
+        </header>
+        <div class="lane-grid">
+          <div class="lane-label">
+            <span class="lane-name">Pad</span>
+            <span class="lane-sub" id="pad-status">Not connected</span>
+          </div>
+          <svg class="lane" id="lane-pad" preserveAspectRatio="none" aria-label="Pad activity over the last minute" role="img"></svg>
+          <div class="lane-label">
+            <span class="lane-name">Roblox</span>
+            <span class="lane-sub" id="click-status">No clicks yet</span>
+          </div>
+          <svg class="lane" id="lane-clicks" preserveAspectRatio="none" aria-label="Clicks over the last minute" role="img"></svg>
+          <div></div>
+          <div class="axis num" aria-hidden="true"><span>60 s ago</span><span>45 s</span><span>30 s</span><span>15 s</span><span>Now</span></div>
+        </div>
+      </section>
+
+      <div class="row">
+        <section class="panel" aria-labelledby="target-title">
+          <header class="panel-head">
+            <h2 id="target-title">Roblox window</h2>
+            <span class="pill" id="target-pill">Not found</span>
+          </header>
+          <div class="target-body">
+            <dl class="kv">
+              <div><dt>Window</dt><dd id="t-title">—</dd></div>
+              <div><dt>Display</dt><dd id="t-display">—</dd></div>
+              <div><dt>Game area</dt><dd class="num" id="t-size">—</dd></div>
+              <div><dt>Process</dt><dd class="num" id="t-proc">—</dd></div>
+            </dl>
+            <div class="preview" id="preview">
+              <div class="preview-win" id="preview-win">
+                <span class="preview-dot" id="preview-dot"></span>
+              </div>
+              <p class="preview-empty" id="preview-empty">Start Roblox and it shows up here within a second.</p>
+            </div>
+          </div>
+          <div class="point-row">
+            <label class="field field-sm"><span>X</span><input class="num" id="in-x" type="number" min="0" inputmode="numeric"></label>
+            <label class="field field-sm"><span>Y</span><input class="num" id="in-y" type="number" min="0" inputmode="numeric"></label>
+            <button class="btn" type="button" id="btn-pick">Pick in 3 s</button>
+          </div>
+          <p class="hint" id="pick-hint">Or hover the spot in Roblox and press <span id="pick-key">F9</span>.</p>
+          <p class="hint is-error" id="pick-error" hidden></p>
+        </section>
+
+        <section class="panel" aria-labelledby="mode-title">
+          <header class="panel-head">
+            <h2 id="mode-title">How it clicks</h2>
+          </header>
+          <div class="seg" role="radiogroup" aria-label="Mode">
+            <button type="button" role="radio" data-mode="background">Background</button>
+            <button type="button" role="radio" data-mode="bounce">Focus bounce</button>
+          </div>
+          <p class="mode-desc" id="mode-desc"></p>
+
+          <div class="fields">
+            <label class="field"><span>Action</span>
+              <select id="in-action"><option value="click">Left click</option><option value="key">Key press</option></select>
+            </label>
+            <label class="field" id="f-key"><span>Key</span><input id="in-key" type="text" maxlength="6" placeholder="e"></label>
+            <label class="field"><span>Every (ms)</span><input class="num" id="in-interval" type="number" min="40" step="10"></label>
+            <label class="field"><span>Hold (ms)</span><input class="num" id="in-hold" type="number" min="10" step="5"></label>
+          </div>
+
+          <div class="switches" id="sw-bounce">
+            <label class="switch-row">
+              <span class="switch-text"><span class="switch-title">Wait for the pad to go quiet</span><span class="switch-desc" id="gate-desc">Holds a click while you're pressing buttons or moving a stick.</span></span>
+              <input type="checkbox" class="toggle" id="in-gate">
+            </label>
+            <div class="fields fields-2" id="gate-fields">
+              <label class="field"><span>Quiet for (ms)</span><input class="num" id="in-idle" type="number" min="0" step="50"></label>
+              <label class="field"><span>Never wait longer than (ms)</span><input class="num" id="in-maxwait" type="number" min="0" step="250"></label>
+            </div>
+          </div>
+          <div class="switches" id="sw-background">
+            <label class="switch-row">
+              <span class="switch-text"><span class="switch-title">Strict message order</span><span class="switch-desc">Waits for Roblox to take each message. Try it if clicks get dropped.</span></span>
+              <input type="checkbox" class="toggle" id="in-strict">
+            </label>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ================= SETTINGS ================= -->
+    <section class="view" id="view-settings" aria-label="Settings" hidden>
+
+      <div class="set">
+        <div class="set-label">
+          <h2>Hotkeys</h2>
+          <p>Work while your game has focus. Use names like F8, Ctrl+F7 or Alt+X.</p>
+        </div>
+        <div class="set-panel">
+          <label class="field"><span>Start and stop</span><input id="in-togglekey" type="text"></label>
+          <label class="field"><span>Pick the click point</span><input id="in-pickkey" type="text"></label>
+          <p class="error-line" id="hotkey-error" hidden></p>
+        </div>
+      </div>
+
+      <div class="set">
+        <div class="set-label">
+          <h2>Which window</h2>
+          <p>Split looks for this process and window class. The defaults match Roblox from Voidstrap, Bloxstrap or the normal installer.</p>
+        </div>
+        <div class="set-panel">
+          <label class="field"><span>Process</span><input id="in-exe" type="text"></label>
+          <label class="field" id="f-class"><span>Window class</span><input id="in-class" type="text"></label>
+        </div>
+      </div>
+
+      <div class="set">
+        <div class="set-label">
+          <h2>Focus bounce</h2>
+          <p>How long Roblox gets after it comes forward, before the click. Raise it if bounce clicks miss.</p>
+        </div>
+        <div class="set-panel">
+          <label class="field"><span>Settle time (ms)</span><input class="num" id="in-settle" type="number" min="10" step="5"></label>
+          <label class="switch-row">
+            <span class="switch-text"><span class="switch-title">Put the cursor back after each click</span><span class="switch-desc">Off leaves it parked over Roblox.</span></span>
+            <input type="checkbox" class="toggle" id="in-restore">
+          </label>
+        </div>
+      </div>
+
+      <div class="set">
+        <div class="set-label">
+          <h2>Window</h2>
+          <p>Keep Split above your other windows on the second monitor.</p>
+        </div>
+        <div class="set-panel">
+          <label class="switch-row">
+            <span class="switch-text"><span class="switch-title">Always on top</span><span class="switch-desc">Stays visible beside Roblox.</span></span>
+            <input type="checkbox" class="toggle" id="in-ontop">
+          </label>
+        </div>
+      </div>
+
+      <div class="set">
+        <div class="set-label">
+          <h2>What works and what doesn't</h2>
+          <p>Straight answers, so you know which mode to use.</p>
+        </div>
+        <div class="set-panel prose">
+          <p><strong>Background</strong> never touches focus or your mouse. Roblox takes it for buttons and menus, but it can ignore clicks into the 3D world, because those only come from the real mouse while Roblox is in focus.</p>
+          <p><strong>Focus bounce</strong> gives Roblox focus for a few tens of milliseconds, clicks for real, and hands focus straight back to your game. It's the reliable one. Borderless and windowed games handle it fine; a game in exclusive fullscreen may flicker or minimise.</p>
+          <p><strong>Your pad.</strong> Pad input goes to whatever has focus, so Split waits for the pad to go quiet before a bounce. The pad lane reads Xbox-style pads on Windows; PlayStation pads show up through Steam Input or DS4Windows. macOS has no background pad reading.</p>
+          <p><strong>Safety.</strong> Split never opens, reads or injects into Roblox; it sends the same input Windows or macOS would. No admin needed. Some games forbid AFK automation in their own rules.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+<script src="mock.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{
+  "name": "split",
+  "productName": "Split",
+  "version": "1.0.0",
+  "description": "Clicks Roblox on your second monitor while you play another game on a pad.",
+  "main": "main.js",
+  "author": "KubaCh7",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win --publish never",
+    "dist:mac": "electron-builder --mac --publish never"
+  },
+  "dependencies": {
+    "koffi": "^2.9.0"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.kubach7.split",
+    "productName": "Split",
+    "asar": false,
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["main.js", "preload.js", "settings.js", "native/**", "renderer/**", "package.json"],
+    "afterPack": "build/after-pack.js",
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }, { "target": "portable", "arch": ["x64"] }],
+      "icon": "build/icon.png"
+    },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "artifactName": "Split-Setup-${version}.${ext}" },
+    "portable": { "artifactName": "Split-${version}-portable.${ext}" },
+    "mac": {
+      "target": [{ "target": "dmg", "arch": ["arm64", "x64"] }],
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.png",
+      "identity": null,
+      "extendInfo": { "NSAppleEventsUsageDescription": "Split switches focus between Roblox and your game for Focus bounce mode." }
+    },
+    "dmg": { "artifactName": "Split-${version}-${arch}.${ext}" }
+  }
+}
