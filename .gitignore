@@ -1,3 +1,4 @@
 .taste-skill/
 node_modules/
 split-app/dist/
+split-app/build-info.json

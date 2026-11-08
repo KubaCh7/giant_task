@@ -2,7 +2,7 @@
 // Split: clicks Roblox on monitor 2 while you play another game on a pad.
 // Main process: owns the click loop, the pad gate, hotkeys and the native layer.
 
-const { app, BrowserWindow, ipcMain, globalShortcut, screen, systemPreferences } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut, screen, systemPreferences, net, shell } = require('electron');
 const path = require('path');
 const Settings = require('./settings');
 
@@ -153,6 +153,58 @@ async function pickNow() {
   return lastPick;
 }
 
+// ---------- updates ----------
+// Every build is published to one rolling release. A build knows its own commit
+// (build-info.json, written by CI); an update is a release built from another commit.
+const REPO = 'KubaCh7/giant_task';
+const DOWNLOAD_PREFIX = `https://github.com/${REPO}/releases/download/`;
+let buildSha = '';
+try { buildSha = String(require('./build-info.json').sha || ''); } catch (_) { /* running from source */ }
+const update = { state: 'idle', message: '', url: '' }; // idle | checking | available | current | error
+let updateTimer = 0;
+
+function pickAsset(assets) {
+  let want;
+  if (process.platform === 'darwin') want = (n) => n.endsWith(process.arch === 'arm64' ? '-arm64.dmg' : '-x64.dmg');
+  else if (process.env.PORTABLE_EXECUTABLE_FILE) want = (n) => n.endsWith('-portable.exe');
+  else want = (n) => /^Split-Setup-.*\.exe$/.test(n);
+  const hit = assets.find((a) => want(a.name));
+  return hit ? hit.browser_download_url : '';
+}
+
+async function checkUpdate() {
+  if (update.state === 'checking') return;
+  clearTimeout(updateTimer);
+  Object.assign(update, { state: 'checking', message: 'Checking GitHub…', url: '' });
+  try {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 8000);
+    const res = await net.fetch(`https://api.github.com/repos/${REPO}/releases/tags/split-latest`, {
+      headers: { 'User-Agent': 'Split', Accept: 'application/vnd.github+json' }, signal: ctl.signal
+    });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error(res.status === 404 ? 'No release found yet' : `GitHub answered ${res.status}`);
+    const rel = await res.json();
+    const url = pickAsset(rel.assets || []);
+    if (!url || !url.startsWith(DOWNLOAD_PREFIX)) throw new Error('The release has no file for this system');
+    if (!buildSha) {
+      Object.assign(update, { state: 'available', message: 'This copy was run from source, so Split can\'t tell if it is current. The newest build is ready to download.', url });
+    } else if (rel.target_commitish && rel.target_commitish !== buildSha) {
+      Object.assign(update, { state: 'available', message: 'A newer build of Split is out.', url });
+    } else {
+      Object.assign(update, { state: 'current', message: 'You have the latest build.', url: '' });
+      updateTimer = setTimeout(() => { if (update.state === 'current') Object.assign(update, { state: 'idle', message: '' }); }, 6000);
+    }
+  } catch (e) {
+    const offline = e.name === 'AbortError' || /net::/.test(e.message);
+    Object.assign(update, { state: 'error', message: offline ? "Couldn't reach GitHub. Check your internet connection." : `Update check failed: ${e.message}.`, url: '' });
+  }
+}
+
+function openUpdate() {
+  if (update.url && update.url.startsWith(DOWNLOAD_PREFIX)) shell.openExternal(update.url);
+}
+
 // ---------- hotkeys ----------
 function registerHotkeys() {
   globalShortcut.unregisterAll();
@@ -173,6 +225,7 @@ function snapshot() {
     nativeError,
     permission: permissionOk(),
     hotkeyError,
+    update: { ...update },
     settings: settings.get(),
     run: { ...run, uptimeMs: run.running ? t - run.startedAt : 0 },
     target: target ? { ...target, display: displayOf(target) } : null,
@@ -222,6 +275,8 @@ if (!app.requestSingleInstanceLock()) {
       if (win && before.alwaysOnTop !== next.alwaysOnTop) win.setAlwaysOnTop(next.alwaysOnTop);
       return snapshot();
     });
+    ipcMain.handle('update:check', async () => { await checkUpdate(); return snapshot(); });
+    ipcMain.handle('update:open', () => { openUpdate(); return snapshot(); });
     ipcMain.handle('run:toggle', () => { toggle(); return snapshot(); });
     ipcMain.handle('run:test', async () => { await fire(); return snapshot(); });
     ipcMain.handle('target:pick', async () => {
@@ -245,6 +300,7 @@ if (!app.requestSingleInstanceLock()) {
     setInterval(() => { if (win && !win.isDestroyed()) win.webContents.send('state', snapshot()); }, 100);
 
     createWindow();
+    setTimeout(checkUpdate, 5000); // quiet check at start, the button shows the result
     app.on('activate', () => { if (!BrowserWindow.getAllWindows().length) createWindow(); });
   });
 

@@ -36,6 +36,7 @@
         <p class="finding"><span id="finding">Looking for Roblox</span> <span class="saved" id="saved" aria-live="polite"></span></p>
       </div>
       <div class="title-actions" id="live-actions">
+        <button class="btn" id="btn-update" type="button">Update</button>
         <button class="btn" id="btn-test" type="button">Test once</button>
         <button class="btn btn-primary" id="btn-run" type="button"><span id="run-label">Start</span><span class="kbd" id="run-key">F8</span></button>
       </div>
@@ -49,6 +50,10 @@
         <button class="btn" type="button" id="btn-permission">Open the permission prompt</button>
       </div>
       <div class="notice" id="notice-native" hidden><p id="native-error"></p></div>
+      <div class="notice" id="notice-update" hidden role="status">
+        <p id="update-msg"></p>
+        <button class="btn" type="button" id="btn-update-open" hidden>Download update</button>
+      </div>
 
       <div class="kpis panel" role="group" aria-label="This session">
         <div class="kpi kpi-lead">

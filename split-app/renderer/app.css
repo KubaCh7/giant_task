@@ -88,6 +88,10 @@ h1 { font-size: var(--fs-title); line-height: 32px; font-weight: 600; letter-spa
 
 .notice { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px; border-radius: var(--radius-card); background: var(--pill-warning-bg); color: var(--pill-warning-ink); }
 
+.notice[data-tone="ok"] { background: var(--pill-positive-bg); color: var(--pill-positive-ink); }
+.notice[data-tone="error"] { background: var(--pill-negative-bg); color: var(--pill-negative-ink); }
+.btn-update-ready { border-color: var(--accent); }
+
 /* ---------- panels ---------- */
 .panel { background: var(--surface); border-radius: var(--radius-card); box-shadow: var(--shadow); padding: var(--card-pad); min-width: 0; }
 .panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 16px; }

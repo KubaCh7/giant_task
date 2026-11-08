@@ -119,6 +119,17 @@
     setText('finding', subline(s));
     $('notice-permission').hidden = s.permission;
     $('notice-native').hidden = !s.nativeError;
+
+    const up = s.update || { state: 'idle', message: '' };
+    const upBtn = $('btn-update');
+    upBtn.disabled = up.state === 'checking';
+    upBtn.classList.toggle('btn-update-ready', up.state === 'available');
+    setText('btn-update', { checking: 'Checking…', available: 'Update available' }[up.state] || 'Update');
+    const showUp = up.state === 'available' || up.state === 'current' || up.state === 'error';
+    $('notice-update').hidden = !showUp;
+    $('notice-update').dataset.tone = up.state === 'current' ? 'ok' : up.state === 'error' ? 'error' : 'warn';
+    setText('update-msg', up.message || '');
+    $('btn-update-open').hidden = up.state !== 'available';
     setText('native-error', s.nativeError || '');
 
     const runBtn = $('btn-run');
@@ -229,6 +240,12 @@
 
   document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => save({ mode: b.dataset.mode })));
   $('btn-to-bounce').addEventListener('click', () => save({ mode: 'bounce' }));
+  // Update: one button. With a newer build waiting it opens the download, otherwise it checks.
+  $('btn-update').addEventListener('click', async () => {
+    if (state && state.update && state.update.state === 'available') render(await api.openUpdate());
+    else render(await api.checkUpdate());
+  });
+  $('btn-update-open').addEventListener('click', async () => render(await api.openUpdate()));
   $('btn-run').addEventListener('click', async () => render(await api.toggle()));
   $('btn-test').addEventListener('click', async () => render(await api.test()));
   $('btn-pick').addEventListener('click', async () => render(await api.pick()));

@@ -24,7 +24,7 @@
     "productName": "Split",
     "asar": false,
     "directories": { "output": "dist", "buildResources": "build" },
-    "files": ["main.js", "preload.js", "settings.js", "native/**", "renderer/**", "package.json"],
+    "files": ["main.js", "preload.js", "settings.js", "build-info.json", "native/**", "renderer/**", "package.json"],
     "afterPack": "build/after-pack.js",
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }, { "target": "portable", "arch": ["x64"] }],

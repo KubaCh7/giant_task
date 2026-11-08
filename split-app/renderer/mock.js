@@ -54,7 +54,7 @@
     if (active) lastPadActive = now;
     const end = lastPadEnd(now);
     return {
-      platform: 'win32', nativeError: '', permission: true, hotkeyError: '',
+      platform: 'win32', nativeError: '', permission: true, hotkeyError: '', update: { ...update },
       settings: { ...settings },
       run: { ...run, uptimeMs: run.running ? now - run.startedAt : 0 },
       target,
@@ -68,6 +68,7 @@
     };
   }
 
+  const update = { state: /update=available/.test(location.search) ? 'available' : 'idle', message: 'A newer build of Split is out.', url: '' };
   const listeners = [];
   setInterval(() => { const s = snapshot(); listeners.forEach((fn) => fn(s)); }, 100);
   window.split = {
@@ -77,6 +78,8 @@
     test: async () => snapshot(),
     pick: async () => snapshot(),
     askPermission: async () => snapshot(),
+    checkUpdate: async () => { Object.assign(update, { state: 'current', message: 'You have the latest build.' }); return snapshot(); },
+    openUpdate: async () => snapshot(),
     onState: (fn) => { listeners.push(fn); return () => {}; }
   };
 })();
