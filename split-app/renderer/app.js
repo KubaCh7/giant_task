@@ -208,7 +208,7 @@
     fill('in-strict', set.strictOrder);
     fill('in-togglekey', set.toggleKey); fill('in-pickkey', set.pickKey);
     fill('in-exe', set.exe); fill('in-class', set.windowClass);
-    fill('in-settle', set.settleMs); fill('in-restore', set.restoreCursor); fill('in-ontop', set.alwaysOnTop);
+    fill('in-settle', set.settleMs); fill('in-restore', set.restoreCursor); fill('in-restore-live', set.restoreCursor); fill('in-ontop', set.alwaysOnTop);
     $('f-class').hidden = s.platform === 'darwin';
 
     const hk = $('hotkey-error');
@@ -236,7 +236,7 @@
   bind('in-strict', 'strictOrder', bool);
   bind('in-togglekey', 'toggleKey'); bind('in-pickkey', 'pickKey');
   bind('in-exe', 'exe'); bind('in-class', 'windowClass');
-  bind('in-settle', 'settleMs', num); bind('in-restore', 'restoreCursor', bool); bind('in-ontop', 'alwaysOnTop', bool);
+  bind('in-settle', 'settleMs', num); bind('in-restore', 'restoreCursor', bool); bind('in-restore-live', 'restoreCursor', bool); bind('in-ontop', 'alwaysOnTop', bool);
 
   document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => save({ mode: b.dataset.mode })));
   $('btn-to-bounce').addEventListener('click', () => save({ mode: 'bounce' }));

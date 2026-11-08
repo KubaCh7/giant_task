@@ -98,10 +98,10 @@ async function bounce(target, { x, y, holdMs, settleMs, vk, restoreCursor }) {
   if (vk != null) await keyAt(0, vk, holdMs);
   else await clickAt(0, { x: target.screenX + x, y: target.screenY + y }, holdMs);
   await sleep(12);
+  if (restoreCursor && vk == null) CGWarpMouseCursorPosition(before); // back before the game regains focus
   if (prev && prev !== target.pid) {
     await osa(`tell application "System Events" to set frontmost of (first process whose unix id is ${prev}) to true`);
   }
-  if (restoreCursor && vk == null) CGWarpMouseCursorPosition(before);
   return { ok: true };
 }
 

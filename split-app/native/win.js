@@ -250,9 +250,13 @@ async function bounce(target, { x, y, holdMs, settleMs, vk, restoreCursor }) {
     }
     await sleep(12);
   } finally {
+    // Cursor goes back first, so your game regains focus with the mouse where you left it.
+    if (restoreCursor && vk == null) {
+      SetCursorPos(cursor.x, cursor.y);
+      SendInput(1, [mouseMoveTo(cursor.x, cursor.y)], koffi.sizeof(INPUT));
+    }
     let back = true;
     if (previous && previous !== target.id) back = forceForeground(previous);
-    if (restoreCursor && vk == null) SetCursorPos(cursor.x, cursor.y);
     if (!back) return { ok: true, warning: 'Could not hand focus back to your game (is it running as admin?)' };
   }
   return { ok: true };
