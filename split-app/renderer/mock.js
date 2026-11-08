@@ -10,8 +10,8 @@
   const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 
   const settings = {
-    mode: 'bounce', action: 'click', key: 'e', x: 1184, y: 642, intervalMs: 200, holdMs: 50, strictOrder: false,
-    settleMs: 35, restoreCursor: true, padGate: true, padIdleMs: 400, padMaxWaitMs: 3000,
+    mode: 'bounce', action: 'click', key: 'e', x: 1184, y: 642, intervalMs: 500, holdMs: 35, strictOrder: false,
+    settleMs: 40, restoreCursor: true, padGate: true, padIdleMs: 400, padMaxWaitMs: 3000,
     toggleKey: 'F8', pickKey: 'F9', exe: 'RobloxPlayerBeta.exe', windowClass: 'WINDOWSCLIENT', alwaysOnTop: false
   };
   const target = empty ? null : {

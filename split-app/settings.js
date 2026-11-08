@@ -9,13 +9,13 @@ const DEFAULTS = {
   action: 'click',           // 'click' | 'key'
   key: 'e',                  // key for action 'key'
   x: 500, y: 500,            // click point in Roblox's own coordinates (0,0 = top-left of the game area)
-  intervalMs: 200,
-  holdMs: 50,
+  intervalMs: 500,
+  holdMs: 35,
   strictOrder: false,        // background: SendMessageTimeout instead of PostMessage
-  settleMs: isMac ? 120 : 80, // bounce: wait after Roblox comes forward
+  settleMs: isMac ? 120 : 40, // bounce: wait after Roblox comes forward
   restoreCursor: true,
   padGate: true,
-  padIdleMs: 400,
+  padIdleMs: 300,
   padMaxWaitMs: 3000,
   toggleKey: 'F8',
   pickKey: 'F9',

@@ -97,7 +97,7 @@ async function bounce(target, { x, y, holdMs, settleMs, vk, restoreCursor }) {
   await sleep(settleMs);
   if (vk != null) await keyAt(0, vk, holdMs);
   else await clickAt(0, { x: target.screenX + x, y: target.screenY + y }, holdMs);
-  await sleep(12);
+  await sleep(8);
   if (restoreCursor && vk == null) CGWarpMouseCursorPosition(before); // back before the game regains focus
   if (prev && prev !== target.pid) {
     await osa(`tell application "System Events" to set frontmost of (first process whose unix id is ${prev}) to true`);
@@ -122,6 +122,6 @@ function keyCode(name) {
 
 module.exports = {
   platform: 'darwin',
-  findTarget, isAlive, cursorInTarget, backgroundClick, backgroundKey, bounce, readPad, keyCode,
+  findTarget, isAlive, cursorPos: () => { const p = cursor(); return { x: Math.round(p.x), y: Math.round(p.y) }; }, cursorInTarget, backgroundClick, backgroundKey, bounce, readPad, keyCode,
   needsPermission: () => true
 };

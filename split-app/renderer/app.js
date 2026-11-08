@@ -185,8 +185,12 @@
     // mode
     document.querySelectorAll('.seg button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.mode === set.mode)));
     const away = set.settleMs + set.holdMs + 30;
+    const share = Math.min(100, Math.round((away / Math.max(1, set.intervalMs)) * 100));
+    const shareText = share >= 30
+      ? ` That's ${share}% of the time, so your mouse will feel laggy. Raise "Every" to ${fmt(Math.ceil(away / 0.15 / 50) * 50)} ms or more.`
+      : ` That's about ${share}% of the time.`;
     setText('mode-desc', set.mode === 'bounce'
-      ? `Brings Roblox forward for a moment, clicks for real, then hands focus back to your game. Works for every kind of click; your game is out of focus for about ${fmt(away)} ms each time.`
+      ? `Brings Roblox forward for a moment, clicks for real, then hands focus back to your game. Works for every kind of click; your game is out of focus for about ${fmt(away)} ms each time.${shareText}`
       : 'Sends Roblox the messages a real click makes, straight to its window. Your game keeps focus and your mouse stays put. Roblox often ignores clicks sent this way.');
     $('mode-hint').hidden = set.mode !== 'background';
     $('sw-bounce').hidden = set.mode !== 'bounce';
@@ -194,17 +198,17 @@
     $('f-key').hidden = set.action !== 'key';
 
     const gate = $('in-gate');
-    gate.disabled = !s.pad.supported;
-    let gateDesc = "Holds a click while you're pressing buttons or moving a stick.";
-    if (!s.pad.supported) gateDesc = s.platform === 'darwin' ? "macOS can't read a pad in the background, so this stays off." : 'XInput is missing on this PC.';
-    else if (!s.pad.connected) gateDesc = 'No pad connected. Clicks go out on time until one is.';
+    gate.disabled = false;
+    let gateDesc = "Holds a click while you're moving the mouse, pressing pad buttons or moving a stick.";
+    if (!s.pad.supported) gateDesc = s.platform === 'darwin' ? "Holds a click while you're moving the mouse. macOS can't read a pad in the background." : "Holds a click while you're moving the mouse. XInput is missing, so the pad isn't read.";
+    else if (!s.pad.connected) gateDesc = "Holds a click while you're moving the mouse. No pad connected right now.";
     setText('gate-desc', gateDesc);
-    $('gate-fields').hidden = !set.padGate || !s.pad.supported;
+    $('gate-fields').hidden = !set.padGate;
 
     fill('in-x', set.x); fill('in-y', set.y);
     fill('in-action', set.action); fill('in-key', set.key);
     fill('in-interval', set.intervalMs); fill('in-hold', set.holdMs);
-    fill('in-gate', set.padGate && s.pad.supported); fill('in-idle', set.padIdleMs); fill('in-maxwait', set.padMaxWaitMs);
+    fill('in-gate', set.padGate); fill('in-idle', set.padIdleMs); fill('in-maxwait', set.padMaxWaitMs);
     fill('in-strict', set.strictOrder);
     fill('in-togglekey', set.toggleKey); fill('in-pickkey', set.pickKey);
     fill('in-exe', set.exe); fill('in-class', set.windowClass);

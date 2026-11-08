@@ -32,8 +32,18 @@ const events = [];       // { t, kind: 'click' | 'held' | 'fail' }
 const padSegments = [];  // { from, to } spans of pad activity, to = null while still active
 let pad = { supported: false, connected: false, active: false };
 let lastPadActiveAt = 0;
+let lastMouseMoveAt = 0;   // your own mouse, so a bounce never yanks it mid-move
+let lastCursor = null;
+let bouncing = false;
 
 // ---------- pad ----------
+function pollMouse() {
+  if (bouncing) { lastCursor = null; return; } // our own moves don't count
+  const c = native.cursorPos();
+  if (lastCursor && (c.x !== lastCursor.x || c.y !== lastCursor.y)) lastMouseMoveAt = now();
+  lastCursor = c;
+}
+
 function pollPad() {
   pad = native.readPad();
   const t = now();
@@ -92,6 +102,7 @@ async function act() {
 }
 
 async function fire() {
+  bouncing = settings.get().mode === 'bounce';
   try {
     const r = await act();
     if (r && r.ok === false) throw new Error(r.reason);
@@ -104,17 +115,20 @@ async function fire() {
     run.failed++;
     run.lastError = e.message;
     events.push({ t: now(), kind: 'fail' });
+  } finally {
+    bouncing = false;
   }
 }
 
-// Waits while the pad is busy so a focus bounce never lands on a pad press.
+// Waits while you're using the pad or the mouse, so a bounce never lands on your input.
 async function padGate(s) {
-  if (s.mode !== 'bounce' || !s.padGate || !pad.connected) return;
+  if (s.mode !== 'bounce' || !s.padGate) return;
+  const busy = () => (pad.connected && now() - lastPadActiveAt < s.padIdleMs) || now() - lastMouseMoveAt < s.padIdleMs;
   const start = now();
   let counted = false;
-  while (run.running && now() - lastPadActiveAt < s.padIdleMs && now() - start < s.padMaxWaitMs) {
+  while (run.running && busy() && now() - start < s.padMaxWaitMs) {
     if (!counted) { counted = true; run.held++; events.push({ t: now(), kind: 'held' }); }
-    await sleep(20);
+    await sleep(15);
   }
 }
 
@@ -296,6 +310,7 @@ if (!app.requestSingleInstanceLock()) {
       await refreshTarget();
       setInterval(refreshTarget, process.platform === 'darwin' ? 2000 : 1000);
       if (native.readPad().supported) setInterval(pollPad, 16);
+      setInterval(pollMouse, 16);
     }
     setInterval(() => { if (win && !win.isDestroyed()) win.webContents.send('state', snapshot()); }, 100);
 

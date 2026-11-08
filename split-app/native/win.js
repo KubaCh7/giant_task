@@ -140,6 +140,12 @@ function isAlive(target) {
 }
 
 // Cursor position converted to the target's client coordinates (physical pixels).
+function cursorPos() {
+  const p = {};
+  GetCursorPos(p);
+  return { x: p.x, y: p.y };
+}
+
 function cursorInTarget(target) {
   const p = {};
   GetCursorPos(p);
@@ -240,15 +246,13 @@ async function bounce(target, { x, y, holdMs, settleMs, vk, restoreCursor }) {
     } else {
       SetCursorPos(pt.x, pt.y);
       // A 1 px wiggle then the exact spot, as real input, so Roblox registers the hover first.
-      SendInput(1, [mouseMoveTo(pt.x + 1, pt.y)], koffi.sizeof(INPUT));
-      await sleep(10);
-      SendInput(1, [mouseMoveTo(pt.x, pt.y)], koffi.sizeof(INPUT));
-      await sleep(25);
+      SendInput(2, [mouseMoveTo(pt.x + 1, pt.y), mouseMoveTo(pt.x, pt.y)], koffi.sizeof(INPUT));
+      await sleep(17); // one frame for Roblox to see the hover
       SendInput(1, [mouseButton(MOUSEEVENTF_LEFTDOWN)], koffi.sizeof(INPUT));
       await sleep(holdMs);
       SendInput(1, [mouseButton(MOUSEEVENTF_LEFTUP)], koffi.sizeof(INPUT));
     }
-    await sleep(12);
+    await sleep(8);
   } finally {
     // Cursor goes back first, so your game regains focus with the mouse where you left it.
     if (restoreCursor && vk == null) {
@@ -292,6 +296,6 @@ function keyCode(name) {
 
 module.exports = {
   platform: 'win32',
-  findTarget, isAlive, cursorInTarget, backgroundClick, backgroundKey, bounce, readPad, keyCode,
+  findTarget, isAlive, cursorPos, cursorInTarget, backgroundClick, backgroundKey, bounce, readPad, keyCode,
   needsPermission: () => false
 };
