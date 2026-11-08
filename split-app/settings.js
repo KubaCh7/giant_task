@@ -5,14 +5,14 @@ const path = require('path');
 const isMac = process.platform === 'darwin';
 
 const DEFAULTS = {
-  mode: 'background',        // 'background' (window messages) | 'bounce' (real click, focus handed back)
+  mode: 'bounce',            // 'bounce' (real click, focus handed back) | 'background' (window messages, Roblox often ignores the click)
   action: 'click',           // 'click' | 'key'
   key: 'e',                  // key for action 'key'
   x: 500, y: 500,            // click point in Roblox's own coordinates (0,0 = top-left of the game area)
   intervalMs: 200,
   holdMs: 50,
   strictOrder: false,        // background: SendMessageTimeout instead of PostMessage
-  settleMs: isMac ? 120 : 35, // bounce: wait after Roblox comes forward
+  settleMs: isMac ? 120 : 80, // bounce: wait after Roblox comes forward
   restoreCursor: true,
   padGate: true,
   padIdleMs: 400,

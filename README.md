@@ -21,7 +21,7 @@ The builds aren't signed with a paid certificate, so you get a warning once:
 3. Pick a mode, press **F8** (or Start), go back to your game.
 
 ## Modes
-- **Background:** sends the click straight to Roblox's window. Your game keeps focus and your mouse stays put. Works on buttons and menus, may be ignored in the 3D world.
+- **Background:** sends the click straight to Roblox's window. Your game keeps focus and your mouse stays put. Roblox often ignores these: the target highlights but nothing clicks. If that happens, use Focus bounce.
 - **Focus bounce:** brings Roblox forward for about 100 ms, clicks for real, hands focus back. Works for every click. Waits for your pad to go quiet first, so it never eats a button press. Use borderless, not exclusive fullscreen.
 
 The pad check reads Xbox-style pads on Windows (PlayStation pads work through Steam Input or DS4Windows). It doesn't work on Mac.

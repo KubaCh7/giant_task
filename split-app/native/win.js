@@ -40,6 +40,7 @@ const IsIconic = user32.func('BOOL __stdcall IsIconic(intptr_t hwnd)');
 const GetClientRect = user32.func('BOOL __stdcall GetClientRect(intptr_t hwnd, _Out_ SPLIT_RECT *rect)');
 const ClientToScreen = user32.func('BOOL __stdcall ClientToScreen(intptr_t hwnd, _Inout_ SPLIT_POINT *pt)');
 const ScreenToClient = user32.func('BOOL __stdcall ScreenToClient(intptr_t hwnd, _Inout_ SPLIT_POINT *pt)');
+const GetSystemMetrics = user32.func('int __stdcall GetSystemMetrics(int index)');
 const GetCursorPos = user32.func('BOOL __stdcall GetCursorPos(_Out_ SPLIT_POINT *pt)');
 const SetCursorPos = user32.func('BOOL __stdcall SetCursorPos(int x, int y)');
 const PostMessageW = user32.func('BOOL __stdcall PostMessageW(intptr_t hwnd, uint32_t msg, uintptr_t wParam, intptr_t lParam)');
@@ -70,7 +71,9 @@ const WM_KEYDOWN = 0x0100, WM_KEYUP = 0x0101;
 const WM_MOUSEMOVE = 0x0200, WM_LBUTTONDOWN = 0x0201, WM_LBUTTONUP = 0x0202, MK_LBUTTON = 0x0001;
 const SMTO_ABORTIFHUNG = 0x0002;
 const INPUT_MOUSE = 0, INPUT_KEYBOARD = 1;
-const MOUSEEVENTF_LEFTDOWN = 0x0002, MOUSEEVENTF_LEFTUP = 0x0004;
+const MOUSEEVENTF_MOVE = 0x0001, MOUSEEVENTF_LEFTDOWN = 0x0002, MOUSEEVENTF_LEFTUP = 0x0004;
+const MOUSEEVENTF_ABSOLUTE = 0x8000, MOUSEEVENTF_VIRTUALDESK = 0x4000;
+const SM_XVIRTUALSCREEN = 76, SM_YVIRTUALSCREEN = 77, SM_CXVIRTUALSCREEN = 78, SM_CYVIRTUALSCREEN = 79;
 const KEYEVENTF_KEYUP = 0x0002, KEYEVENTF_SCANCODE = 0x0008;
 const PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
 const XINPUT_DEADZONE_LEFT = 7849, XINPUT_DEADZONE_RIGHT = 8689, XINPUT_TRIGGER_THRESHOLD = 30;
@@ -202,6 +205,17 @@ function mouseButton(flags) {
   return { type: INPUT_MOUSE, u: { mi: { dx: 0, dy: 0, mouseData: 0, dwFlags: flags, time: 0, dwExtraInfo: 0 } } };
 }
 
+// A real mouse-move event (not just SetCursorPos). Roblox reads hover and click
+// from actual input events, so the click lands only after it has seen one.
+function mouseMoveTo(px, py) {
+  const vx = GetSystemMetrics(SM_XVIRTUALSCREEN), vy = GetSystemMetrics(SM_YVIRTUALSCREEN);
+  const vw = Math.max(2, GetSystemMetrics(SM_CXVIRTUALSCREEN)), vh = Math.max(2, GetSystemMetrics(SM_CYVIRTUALSCREEN));
+  const dx = Math.round(((px - vx) * 65535) / (vw - 1));
+  const dy = Math.round(((py - vy) * 65535) / (vh - 1));
+  const flags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK;
+  return { type: INPUT_MOUSE, u: { mi: { dx, dy, mouseData: 0, dwFlags: flags, time: 0, dwExtraInfo: 0 } } };
+}
+
 function keyEvent(vk, up) {
   const sc = MapVirtualKeyW(vk, 0);
   return { type: INPUT_KEYBOARD, u: { ki: { wVk: 0, wScan: sc, dwFlags: KEYEVENTF_SCANCODE | (up ? KEYEVENTF_KEYUP : 0), time: 0, dwExtraInfo: 0 } } };
@@ -225,7 +239,11 @@ async function bounce(target, { x, y, holdMs, settleMs, vk, restoreCursor }) {
       SendInput(1, [keyEvent(vk, true)], koffi.sizeof(INPUT));
     } else {
       SetCursorPos(pt.x, pt.y);
-      await sleep(8);
+      // A 1 px wiggle then the exact spot, as real input, so Roblox registers the hover first.
+      SendInput(1, [mouseMoveTo(pt.x + 1, pt.y)], koffi.sizeof(INPUT));
+      await sleep(10);
+      SendInput(1, [mouseMoveTo(pt.x, pt.y)], koffi.sizeof(INPUT));
+      await sleep(25);
       SendInput(1, [mouseButton(MOUSEEVENTF_LEFTDOWN)], koffi.sizeof(INPUT));
       await sleep(holdMs);
       SendInput(1, [mouseButton(MOUSEEVENTF_LEFTUP)], koffi.sizeof(INPUT));

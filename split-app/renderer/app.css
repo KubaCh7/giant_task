@@ -154,6 +154,9 @@ h1 { font-size: var(--fs-title); line-height: 32px; font-weight: 600; letter-spa
 .seg button[aria-checked="true"] { color: var(--text); }
 .seg button[aria-checked="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--accent); }
 .mode-desc { margin: 14px 0 18px; color: var(--muted); font-size: 13px; line-height: 20px; max-width: 60ch; }
+.mode-desc:has(+ .mode-hint:not([hidden])) { margin-bottom: 8px; }
+.mode-hint { margin: 0 0 18px; font-size: 13px; line-height: 20px; max-width: 60ch; }
+.link { background: none; border: 0; padding: 0; cursor: pointer; color: var(--text); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--accent); }
 
 .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 16px; }
 .fields-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 12px; }

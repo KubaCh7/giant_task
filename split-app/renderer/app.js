@@ -176,7 +176,8 @@
     const away = set.settleMs + set.holdMs + 30;
     setText('mode-desc', set.mode === 'bounce'
       ? `Brings Roblox forward for a moment, clicks for real, then hands focus back to your game. Works for every kind of click; your game is out of focus for about ${fmt(away)} ms each time.`
-      : 'Sends Roblox the messages a real click makes, straight to its window. Your game keeps focus and your mouse stays put. Roblox may ignore some clicks into the 3D world this way.');
+      : 'Sends Roblox the messages a real click makes, straight to its window. Your game keeps focus and your mouse stays put. Roblox often ignores clicks sent this way.');
+    $('mode-hint').hidden = set.mode !== 'background';
     $('sw-bounce').hidden = set.mode !== 'bounce';
     $('sw-background').hidden = set.mode !== 'background';
     $('f-key').hidden = set.action !== 'key';
@@ -227,6 +228,7 @@
   bind('in-settle', 'settleMs', num); bind('in-restore', 'restoreCursor', bool); bind('in-ontop', 'alwaysOnTop', bool);
 
   document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => save({ mode: b.dataset.mode })));
+  $('btn-to-bounce').addEventListener('click', () => save({ mode: 'bounce' }));
   $('btn-run').addEventListener('click', async () => render(await api.toggle()));
   $('btn-test').addEventListener('click', async () => render(await api.test()));
   $('btn-pick').addEventListener('click', async () => render(await api.pick()));
